@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Finder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-nim3Ez7E3l/fC1zfX9fZzXqzFzL6pJlu1pB7uJX/e9c7JWlCPA7EJxALuKn9E6bNh5Kqb0szr3ViGSk0DGNv5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle, #ff4e00, #ec9f05, #ff4e00);
+
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 90%;
+      max-width: 800px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .search-bar input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px 0 0 4px;
+      transition: border-color 0.3s ease;
+    }
+    .search-bar input[type="text"]:focus {
+      border-color: #4CAF50;
+      outline: none;
+    }
+    .search-bar button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .search-bar button:hover {
+      background-color: #45a049;
+    }
+    .recipes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .recipe {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .recipe:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .recipe h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 10px;
+      transition: color 0.3s ease;
+    }
+    .recipe:hover h2 {
+      color: #4CAF50;
+    }
+    .recipe p {
+      color: #666;
+      transition: color 0.3s ease;
+    }
+    .recipe:hover p {
+      color: #888;
+    }
+    .recipe img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: transform 0.3s ease;
+    }
+    .recipe:hover img {
+      transform: scale(1.03);
+    }
+    .recipe ul {
+      padding-left: 20px;
+    }
+    .recipe ul li {
+      list-style-type: disc;
+      margin-bottom: 5px;
+      transition: color 0.3s ease;
+    }
+    .recipe:hover ul li {
+      color: #888;
+    }
+    .recipe a {
+      color: #4CAF50;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    .recipe a:hover {
+      text-decoration: underline;
+      color: #45a049;
+    }
+    .attribution {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 20px;
+      color: #999;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+      }
+      .search-bar {
+        flex-direction: column;
+      }
+      .search-bar input[type="text"] {
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+      .search-bar button {
+        border-radius: 4px;
+      }
+      .recipe {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Recipe Finder</h1>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search recipes..." onkeydown="handleKeyPress(event)">
+      <button onclick="searchRecipes()"><i class="fas fa-search"></i> Search</button>
+    </div>
+
+    <div class="recipes" id="recipeList"></div>
+
+    <div class="attribution">
+    Created by <a href="https://termin-al-p-ort-folio.vercel.app/">Ragul</a>.
+    </div>
+  </div>
+
+  <script>
+    async function searchRecipes() {
+      var appId = '5a563819'; // Replace with your Edamam App ID
+      var appKey = '7f4d566cc5dd490fa0dfb7ce35e48619'; // Replace with your Edamam API Key
+      var query = document.getElementById('searchInput').value.trim();
+
+      var endpoint = `https://api.edamam.com/search?q=${query}&app_id=${appId}&app_key=${appKey}`;
+
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        console.log(data);
+
+        if (data.hits && data.hits.length > 0) {
+          var recipeList = document.getElementById('recipeList');
+          recipeList.innerHTML = ''; // Clear previous results
+
+          data.hits.forEach(hit => {
+            var recipe = hit.recipe;
+            var recipeHtml = `
+              <div class="recipe">
+                <h2>${recipe.label}</h2>
+                <img src="${recipe.image}" alt="${recipe.label}">
+                <p><strong>Ingredients:</strong></p>
+                <ul>
+                  ${recipe.ingredientLines.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                </ul>
+                <p><a href="${recipe.url}" target="_blank">View Recipe</a></p>
+              </div>
+            `;
+            recipeList.innerHTML += recipeHtml;
+          });
+        } else {
+          var recipeList = document.getElementById('recipeList');
+          recipeList.innerHTML = '<p>No recipes found.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching recipes:', error);
+        var recipeList = document.getElementById('recipeList');
+        recipeList.innerHTML = '<p>Failed to fetch recipes. Please try again later.</p>';
+      }
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        searchRecipes();
+      }
+    }
+  </script>
+</body>
+</html>
